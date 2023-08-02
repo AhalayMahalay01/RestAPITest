@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestAPITest/internal/config"
+	"RestAPITest/internal/storage/sqllite"
 	"golang.org/x/exp/slog"
 	"os"
 )
@@ -21,7 +22,13 @@ func main() {
 	log.Info("starting url-shortener", slog.String("env", sfg.Env))
 	log.Debug("debug messages are enabled")
 
-	// TODO: init storage: sqlite
+	storage, err := sqllite.New(sfg.StoragePath)
+	if err != nil {
+		log.Error("failed to init storage", slog.Err(err))
+		os.Exit(1)
+	}
+
+	_ = storage
 
 	// TODO: init router: chi, "chi render"
 
