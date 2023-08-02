@@ -24,8 +24,8 @@ func main() {
 
 	storage, err := sqllite.New(sfg.StoragePath)
 	if err != nil {
-		log.Error("failed to init storage", slog.Err(err))
-		os.Exit(1)
+		log.Error("failed to init storage", slog.Error)
+		return
 	}
 
 	_ = storage
@@ -33,7 +33,6 @@ func main() {
 	// TODO: init router: chi, "chi render"
 
 	// TODO: run  server:
-
 }
 
 func setupLogger(env string) *slog.Logger {
