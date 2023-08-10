@@ -1,6 +1,6 @@
 env: "local" # local, dev, prod
-storaga_path: "./storage/storage,.db"
+storaga_path: "./storage/storage.db"
 http_server:
-  address: "localhost:8084  "
+  address: "localhost:8084"
   timeout: 4s
   idle_timeout: 60s

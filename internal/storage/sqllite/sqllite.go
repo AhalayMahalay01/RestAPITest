@@ -42,6 +42,7 @@ func (s *Storage) SaveURL(urlToSave string, alias string) (int64, error) {
 
 	stmt, err := s.db.Prepare("INSERT INTO url(url, alias) VALUES(?, ?)")
 	if err != nil {
+		fmt.Println("test")
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
