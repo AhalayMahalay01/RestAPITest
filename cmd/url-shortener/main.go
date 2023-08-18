@@ -3,6 +3,8 @@ package main
 import (
 	"RestAPITest/internal/config"
 	"RestAPITest/internal/storage/sqllite"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 	"os"
 )
@@ -28,7 +30,7 @@ func main() {
 		return
 	}
 
-	id, err := storage.SaveURL("https://google.com", "google")
+	/*id, err := storage.SaveURL("https://google.com", "google")
 	if err != nil {
 		log.Error("failed to save url", slog.Error)
 		os.Exit(1)
@@ -42,9 +44,18 @@ func main() {
 	//	os.Exit(1)
 	//}
 
-	_ = storage
+	_ = storage */
 
-	// TODO: init router: chi, "chi render"
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID) // RequestID дає можливість віднайти по даному ID для подальшої роботи з помилками
+	// router.Use(middleware.RealIP) ще один можливий варіант
+	//middleware Повертає користувача при неправильному вводу логіна або пароля
+
+	router.Use(middleware.Logger) // логірує всі вхідні запити
+	router.Use(mwLogger.New(log))
+	router.Use(middleware.Recoverer) //якщо виникає паніка всередині Handler
+	router.Use(middleware.URLFormat) // для зручного написання url при підключенні їх до router
 
 	// TODO: run  server:
 }
