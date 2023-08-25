@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestAPITest/internal/config"
+	"RestAPITest/internal/lib/logger/handlers/slogpretty"
 	"RestAPITest/internal/storage/sqllite"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -21,7 +22,8 @@ func main() {
 
 	log := setupLogger(sfg.Env)
 
-	log.Info("starting url-shortener", slog.String("env", sfg.Env))
+	log.Info("starting url-shortener", slog.String("env", sfg.Env), slog.String("version", "13"))
+	log.Debug("debug messages are enabled")
 	log.Debug("debug messages are enabled")
 
 	storage, err := sqllite.New(sfg.StoragePath)
@@ -42,9 +44,9 @@ func main() {
 	//if err != nil {
 	//	log.Error("failed to save url", slog.Error)
 	//	os.Exit(1)
-	//}
+	//}*/
 
-	_ = storage */
+	_ = storage
 
 	router := chi.NewRouter()
 
@@ -53,8 +55,8 @@ func main() {
 	//middleware Повертає користувача при неправильному вводу логіна або пароля
 
 	router.Use(middleware.Logger) // логірує всі вхідні запити
-	router.Use(mwLogger.New(log))
-	router.Use(middleware.Recoverer) //якщо виникає паніка всередині Handler
+	//router.Use(mwLogger.New(log))
+	router.Use(middleware.Recoverer) // якщо виникає паніка всередині Handler
 	router.Use(middleware.URLFormat) // для зручного написання url при підключенні їх до router
 
 	// TODO: run  server:
@@ -64,9 +66,10 @@ func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
 	switch env {
 	case envLocal:
-		log = slog.New(
+		log = setupPrettySlog()
+		/*log = slog.New(
 			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		)
+		)*/
 	case envDev:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
@@ -78,4 +81,16 @@ func setupLogger(env string) *slog.Logger {
 	}
 	return log
 
+}
+
+func setupPrettySlog() *slog.Logger {
+	opts := slogpretty.PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
 }
