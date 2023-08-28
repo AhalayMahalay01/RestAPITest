@@ -4,6 +4,7 @@ import (
 	resp "RestAPITest/internal/lib/api/response"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 	"golang.org/x/exp/slog"
 	"net/http"
 )
@@ -35,7 +36,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc { // констр
 
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
-			log.Error("failed to decode request body", slog.Error(err)) // пишемо помилку в log
+			log.Error("failed to decode request body", slog.Error) // пишемо помилку в log
 
 			render.JSON(w, r, resp.Error("failed to decode request")) // повертаємо json-відповідь клієнту
 
@@ -43,5 +44,16 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc { // констр
 		}
 
 		log.Info("request body decoded", slog.Any("request", req))
+
+		if err := validator.New().Struct(req); err != nil { // створюємо валідатора, який має провалідувати структуру
+			validateErr := err.(validator.ValidationErrors) // якщо буде помилка, то він поверне помилку даного типу
+			log.Error("invalid request", slog.Error)        // залогуємо дану помилку
+
+			//render.JSON(w, r, resp.Error("invalid request"))
+			render.JSON(w, r, resp.ValidationError(validateErr)) // формуємо запит з повідомленням про помилку
+
+			return
+		}
+
 	}
 }
