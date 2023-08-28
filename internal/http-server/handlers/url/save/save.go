@@ -19,6 +19,8 @@ type Response struct { // відповідь яку ми повертаємо
 	Alias string `json:"alias,omitempty"`
 }
 
+const aliasLength = 5 // також можна перенести в config
+
 type URLSaver interface { // URLSaver інтерфейс storage
 	SaveURL(urlToSave string, alias string) (int64, error)
 }
@@ -53,6 +55,11 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc { // констр
 			render.JSON(w, r, resp.ValidationError(validateErr)) // формуємо запит з повідомленням про помилку
 
 			return
+		}
+
+		alias := req.Alias
+		if alias == "" {
+			alias = random.NewRandomString(aliasLength)
 		}
 
 	}
