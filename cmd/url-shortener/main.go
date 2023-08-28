@@ -24,7 +24,7 @@ func main() {
 
 	log.Info("starting url-shortener", slog.String("env", sfg.Env), slog.String("version", "13"))
 	log.Debug("debug messages are enabled")
-	log.Debug("debug messages are enabled")
+	log.Error("error messages are enabled")
 
 	storage, err := sqllite.New(sfg.StoragePath)
 	if err != nil {
