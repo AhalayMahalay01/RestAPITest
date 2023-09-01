@@ -2,11 +2,13 @@ package main
 
 import (
 	"RestAPITest/internal/config"
+	"RestAPITest/internal/http-server/handlers/url/save"
 	"RestAPITest/internal/lib/logger/handlers/slogpretty"
 	"RestAPITest/internal/storage/sqllite"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
+	"net/http"
 	"os"
 )
 
@@ -24,7 +26,7 @@ func main() {
 
 	log.Info("starting url-shortener", slog.String("env", sfg.Env), slog.String("version", "13"))
 	log.Debug("debug messages are enabled")
-	log.Error("error messages are enabled")
+	//log.Error("error messages are enabled")
 
 	storage, err := sqllite.New(sfg.StoragePath)
 	if err != nil {
@@ -58,6 +60,24 @@ func main() {
 	//router.Use(mwLogger.New(log))
 	router.Use(middleware.Recoverer) // якщо виникає паніка всередині Handler
 	router.Use(middleware.URLFormat) // для зручного написання url при підключенні їх до router
+
+	router.Post("/url", save.New(log, storage))
+
+	log.Info("starting server", slog.String("address", sfg.Address)) // виводимо повідомлення про запуск серверу, та на якій адресі він запускається
+
+	srv := &http.Server{ //створюємо сам сервер
+		Addr:         sfg.Address,
+		Handler:      router,
+		ReadTimeout:  sfg.HTTPServer.Timeout,
+		WriteTimeout: sfg.HTTPServer.Timeout,
+		IdleTimeout:  sfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil { // функція для блокування виклику під час виникнення помилки
+		log.Error("failed to start server")
+	}
+
+	log.Error("server STOP!")
 
 	// TODO: run  server:
 }
